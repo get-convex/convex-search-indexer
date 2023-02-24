@@ -12,7 +12,7 @@ const sanity = createSanityClient({
   projectId: SANITY_APP_ID,
   dataset: "production",
   apiVersion: "v1",
-  useCdn: true,
+  useCdn: false,
 });
 
 const convexAlgolia = algoliasearch(
