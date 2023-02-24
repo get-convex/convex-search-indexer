@@ -1,0 +1,7 @@
+{
+  "project": "convex-search-indexer",
+  "team": "convex",
+  "prodUrl": "https://dusty-spoonbill-882.convex.cloud",
+  "functions": "convex/",
+  "authInfo": []
+}
