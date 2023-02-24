@@ -84,7 +84,6 @@ async function syncAlgoliaIndex() {
   console.log("Done indexing Stack -> Algolia");
 }
 
-// Post a GIF chat message corresponding to the query string.
 export default action(async ({}, secret: string) => {
   if (
     typeof secret != "string" ||
