@@ -11,6 +11,7 @@
 
 import type { ApiFromModules } from "convex/api";
 import type * as actions_indexStack from "../actions/indexStack";
+import type * as http from "../http";
 
 /**
  * A type describing your app's public Convex API.
@@ -23,4 +24,5 @@ import type * as actions_indexStack from "../actions/indexStack";
  */
 export type API = ApiFromModules<{
   "actions/indexStack": typeof actions_indexStack;
+  http: typeof http;
 }>;
