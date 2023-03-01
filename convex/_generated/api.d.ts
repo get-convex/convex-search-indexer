@@ -10,6 +10,8 @@
  */
 
 import type { ApiFromModules } from "convex/api";
+import type * as actions_common from "../actions/common";
+import type * as actions_indexDocs from "../actions/indexDocs";
 import type * as actions_indexStack from "../actions/indexStack";
 import type * as http from "../http";
 
@@ -23,6 +25,8 @@ import type * as http from "../http";
  * `ConvexReactClient` to create app-specific types.
  */
 export type API = ApiFromModules<{
+  "actions/common": typeof actions_common;
+  "actions/indexDocs": typeof actions_indexDocs;
   "actions/indexStack": typeof actions_indexStack;
   http: typeof http;
 }>;

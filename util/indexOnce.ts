@@ -17,8 +17,10 @@ console.log(`Using ${process.env.VITE_CONVEX_URL}...`);
 const convex = new ConvexHttpClient(process.env.VITE_CONVEX_URL);
 
 const indexStack = convex.action("actions/indexStack");
+const indexDocs = convex.action("actions/indexDocs");
 
 async function runEm() {
-  await indexStack(process.env.SEARCH_INDEXER_SECRET);
+  //  await indexStack(process.env.SEARCH_INDEXER_SECRET);
+  await indexDocs(process.env.SEARCH_INDEXER_SECRET);
 }
 runEm();

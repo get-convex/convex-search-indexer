@@ -1,10 +1,9 @@
 import groq from "groq";
-import algoliasearch from "algoliasearch";
 import markdownToTxt from "markdown-to-txt";
 import { createClient as createSanityClient } from "@sanity/client";
 import { action } from "../_generated/server";
+import { getAlgolia } from "./common";
 
-const ALGOLIA_APP_ID = "1KIE511890";
 const STACK_INDEX = "stack";
 const SANITY_APP_ID = "ts10onj4";
 
@@ -15,10 +14,7 @@ const sanity = createSanityClient({
   useCdn: false,
 });
 
-const convexAlgolia = algoliasearch(
-  ALGOLIA_APP_ID,
-  process.env.ALGOLIA_API_KEY!
-);
+const convexAlgolia = getAlgolia();
 
 const A_LOT_OF_POSTS = 10000;
 
