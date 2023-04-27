@@ -1,7 +1,7 @@
 "use node";
 import got from "got";
 import Sitemapper from "sitemapper";
-import { action } from "../_generated/server";
+import { action, internalAction } from "../_generated/server";
 import * as cheerio from "cheerio";
 import { ConcurrencyLimiter, getAlgolia } from "./common";
 import { htmlToText } from "html-to-text";
@@ -101,23 +101,26 @@ function validateJwt(inputJwt?: string): boolean {
   return true;
 }
 
-export default action(
+export const validateAndIndex = internalAction(
   async (
-    { scheduler },
-    { secret, jwt, async }: { secret?: string; jwt?: string, async?: boolean },
-  ) => {
-    if (!(validateSecretString(secret) || validateJwt(jwt))) {
-      console.error(
-        "Unauthorized -- secret not given or doesn't match backend environment"
-      );
-      throw "Unauthorized";
+    { runAction },
+    { jwt, async }: { jwt?: string; async?: boolean }
+  ): Promise<boolean> => {
+    if (!validateJwt(jwt)) {
+      console.error("Unauthorized -- JWT validation failed");
+      return false;
     }
+    await runAction("actions/indexDocs:index", { async });
+    return true;
+  }
+);
+
+export const index = internalAction(
+  async ({ scheduler }, { async }: { async?: boolean }) => {
     const isAsync = async ?? false;
     if (isAsync) {
       // To not e.g. block netlify.
-      await scheduler.runAfter(1000, "actions/indexDocs", {
-        secret: process.env.SEARCH_INDEXER_SECRET!,
-      });
+      await scheduler.runAfter(0, "actions/indexDocs:index", {});
     } else {
       await syncDocsIndex();
     }

@@ -2,7 +2,7 @@
 import groq from "groq";
 import markdownToTxt from "markdown-to-txt";
 import { createClient as createSanityClient } from "@sanity/client";
-import { action } from "../_generated/server";
+import { action, internalAction } from "../_generated/server";
 import { getAlgolia } from "./common";
 
 const STACK_INDEX = "stack";
@@ -81,15 +81,6 @@ async function syncAlgoliaIndex() {
   console.log("Done indexing Stack -> Algolia");
 }
 
-export default action(async ({}, {secret}: {secret: string}) => {
-  if (
-    typeof secret != "string" ||
-    secret !== process.env.SEARCH_INDEXER_SECRET
-  ) {
-    console.error(
-      "Unauthorized -- secret not given or doesn't match backend environment"
-    );
-    throw "Unauthorized";
-  }
+export default internalAction(async ({}) => {
   await syncAlgoliaIndex();
 });
