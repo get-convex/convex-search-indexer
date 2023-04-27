@@ -1,3 +1,4 @@
+"use node";
 import groq from "groq";
 import markdownToTxt from "markdown-to-txt";
 import { createClient as createSanityClient } from "@sanity/client";
@@ -80,7 +81,7 @@ async function syncAlgoliaIndex() {
   console.log("Done indexing Stack -> Algolia");
 }
 
-export default action(async ({}, secret: string) => {
+export default action(async ({}, {secret}: {secret: string}) => {
   if (
     typeof secret != "string" ||
     secret !== process.env.SEARCH_INDEXER_SECRET

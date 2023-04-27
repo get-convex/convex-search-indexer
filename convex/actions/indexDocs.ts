@@ -1,9 +1,11 @@
+"use node";
 import got from "got";
 import Sitemapper from "sitemapper";
 import { action } from "../_generated/server";
 import * as cheerio from "cheerio";
 import { ConcurrencyLimiter, getAlgolia } from "./common";
 import { htmlToText } from "html-to-text";
+import jwt from "jsonwebtoken";
 
 // TODO -- simple for now, maybe make contents structurally richer eventually
 type AlgoliaDocsDocument = {
@@ -77,15 +79,47 @@ async function syncDocsIndex(url?: string) {
   console.log(`Done indexing Docs -> Algolia (${indexDocuments.length} docs)`);
 }
 
-export default action(async ({}, secret: string) => {
-  if (
-    typeof secret != "string" ||
-    secret !== process.env.SEARCH_INDEXER_SECRET
-  ) {
-    console.error(
-      "Unauthorized -- secret not given or doesn't match backend environment"
-    );
-    throw "Unauthorized";
+function validateSecretString(secret?: string): boolean {
+  return (
+    typeof secret === "string" && secret === process.env.SEARCH_INDEXER_SECRET
+  );
+}
+
+function validateJwt(inputJwt?: string): boolean {
+  if (typeof inputJwt !== "string") {
+    return false;
   }
-  await syncDocsIndex();
-});
+  try {
+    jwt.verify(inputJwt, process.env.SEARCH_INDEXER_SECRET!, {
+      issuer: "netlify",
+    });
+  } catch (error) {
+    // Some sort of auth error with the JWT.
+    console.error(error);
+    return false;
+  }
+  return true;
+}
+
+export default action(
+  async (
+    { scheduler },
+    { secret, jwt, async }: { secret?: string; jwt?: string, async?: boolean },
+  ) => {
+    if (!(validateSecretString(secret) || validateJwt(jwt))) {
+      console.error(
+        "Unauthorized -- secret not given or doesn't match backend environment"
+      );
+      throw "Unauthorized";
+    }
+    const isAsync = async ?? false;
+    if (isAsync) {
+      // To not e.g. block netlify.
+      await scheduler.runAfter(1000, "actions/indexDocs", {
+        secret: process.env.SEARCH_INDEXER_SECRET!,
+      });
+    } else {
+      await syncDocsIndex();
+    }
+  }
+);

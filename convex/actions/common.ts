@@ -1,3 +1,4 @@
+"use node";
 import algoliasearch from "algoliasearch";
 
 export const ALGOLIA_APP_ID = "1KIE511890";
