@@ -1,10 +1,10 @@
+"use node";
 import groq from "groq";
-import algoliasearch from "algoliasearch";
 import markdownToTxt from "markdown-to-txt";
 import { createClient as createSanityClient } from "@sanity/client";
-import { action } from "../_generated/server";
+import { action, internalAction } from "../_generated/server";
+import { getAlgolia } from "./common";
 
-const ALGOLIA_APP_ID = "1KIE511890";
 const STACK_INDEX = "stack";
 const SANITY_APP_ID = "ts10onj4";
 
@@ -15,10 +15,7 @@ const sanity = createSanityClient({
   useCdn: false,
 });
 
-const convexAlgolia = algoliasearch(
-  ALGOLIA_APP_ID,
-  process.env.ALGOLIA_API_KEY!
-);
+const convexAlgolia = getAlgolia();
 
 const A_LOT_OF_POSTS = 10000;
 
@@ -84,15 +81,6 @@ async function syncAlgoliaIndex() {
   console.log("Done indexing Stack -> Algolia");
 }
 
-export default action(async ({}, secret: string) => {
-  if (
-    typeof secret != "string" ||
-    secret !== process.env.SEARCH_INDEXER_SECRET
-  ) {
-    console.error(
-      "Unauthorized -- secret not given or doesn't match backend environment"
-    );
-    throw "Unauthorized";
-  }
+export default internalAction(async ({}) => {
   await syncAlgoliaIndex();
 });
