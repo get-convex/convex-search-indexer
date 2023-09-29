@@ -123,7 +123,7 @@ export const index = internalAction(
     const isAsync = async ?? false;
     if (isAsync) {
       // To not e.g. block netlify.
-      // TODO await scheduler.runAfter(0, "actions/indexDocs:index", {});
+      await scheduler.runAfter(0, internal.docs.index, {});
     } else {
       await syncDocsIndex();
     }
