@@ -18,7 +18,7 @@ const convex = new ConvexHttpClient(process.env.VITE_CONVEX_URL);
 
 async function runEm() {
   const secret = process.env.SEARCH_INDEXER_SECRET;
- // await convex.action("actions/indexStack", { secret });
+  // await convex.action("actions/indexStack", { secret });
   await convex.action("actions/indexDocs", { secret });
 }
 runEm();

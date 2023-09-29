@@ -1,11 +1,13 @@
 "use node";
 import got from "got";
 import Sitemapper from "sitemapper";
-import { action, internalAction } from "../_generated/server";
+import { action, internalAction } from "./_generated/server";
 import * as cheerio from "cheerio";
 import { ConcurrencyLimiter, getAlgolia } from "./common";
 import { htmlToText } from "html-to-text";
 import jwt from "jsonwebtoken";
+import { api, internal } from "./_generated/api";
+import { v } from "convex/values";
 
 // TODO -- simple for now, maybe make contents structurally richer eventually
 type AlgoliaDocsDocument = {
@@ -101,26 +103,27 @@ function validateJwt(inputJwt?: string): boolean {
   return true;
 }
 
-export const validateAndIndex = internalAction(
-  async (
-    { runAction },
-    { jwt, async }: { jwt?: string; async?: boolean }
-  ): Promise<boolean> => {
+export const validateAndIndex = internalAction({
+  args: {
+    jwt: v.optional(v.string()),
+    async: v.optional(v.boolean()),
+  },
+  handler: async ({ runAction }, { jwt, async }): Promise<boolean> => {
     if (!validateJwt(jwt)) {
       console.error("Unauthorized -- JWT validation failed");
       return false;
     }
-    await runAction("actions/indexDocs:index", { async });
+    await runAction(internal.docs.index, { async });
     return true;
-  }
-);
+  },
+});
 
 export const index = internalAction(
   async ({ scheduler }, { async }: { async?: boolean }) => {
     const isAsync = async ?? false;
     if (isAsync) {
       // To not e.g. block netlify.
-      await scheduler.runAfter(0, "actions/indexDocs:index", {});
+      // TODO await scheduler.runAfter(0, "actions/indexDocs:index", {});
     } else {
       await syncDocsIndex();
     }

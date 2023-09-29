@@ -2,7 +2,7 @@
 import groq from "groq";
 import markdownToTxt from "markdown-to-txt";
 import { createClient as createSanityClient } from "@sanity/client";
-import { action, internalAction } from "../_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { getAlgolia } from "./common";
 
 const STACK_INDEX = "stack";
@@ -81,6 +81,6 @@ async function syncAlgoliaIndex() {
   console.log("Done indexing Stack -> Algolia");
 }
 
-export default internalAction(async ({}) => {
+export const index = internalAction(async ({}) => {
   await syncAlgoliaIndex();
 });

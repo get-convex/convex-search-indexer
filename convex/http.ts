@@ -1,5 +1,6 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 // Webhook called by Sanity on Stack content changes.
 const indexStack = httpAction(async ({ runAction }, request) => {
@@ -11,13 +12,15 @@ const indexStack = httpAction(async ({ runAction }, request) => {
     });
   }
   if (secret !== process.env.SEARCH_INDEXER_SECRET) {
-    console.error("Index webhook called with incorrect x-indexer-secret header");
+    console.error(
+      "Index webhook called with incorrect x-indexer-secret header"
+    );
     return new Response(null, {
       status: 403,
     });
   }
 
-  await runAction("actions/indexStack", {});
+  await runAction(internal.stack.index, {});
   return new Response(null, {
     status: 200,
   });
@@ -35,7 +38,10 @@ const indexDocs = httpAction(async ({ runAction }, request) => {
   }
   // Run action in background (if it passes auth checks).
   // Netlify doesn't like long-running HTTP requests.
-  const validated = await runAction("actions/indexDocs:validateAndIndex", { jwt: signature, async: true });
+  const validated = await runAction(internal.docs.validateAndIndex, {
+    jwt: signature,
+    async: true,
+  });
   if (!validated) {
     console.error("JWT validation failed");
     return new Response(null, {
