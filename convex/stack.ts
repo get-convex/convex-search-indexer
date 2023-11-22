@@ -24,6 +24,7 @@ type AlgoliaStackDocument = {
   type: 'article' | 'video';
   title: string;
   summary: string;
+  mainImageUrl: string;
   content: string;
   tags: string[];
 };
@@ -35,6 +36,7 @@ const postFields = `
   title,
   content,
   summary,
+  'mainImageUrl': mainImage.asset->url,
   'slug':slug.current,
   'tags': tags[]->tag.current
 `;
@@ -44,6 +46,7 @@ type Post = {
   type: 'article' | 'video';
   title: string;
   summary: string;
+  mainImageUrl: string;
   content: string;
   tags: string[];
   slug: string;
@@ -68,6 +71,7 @@ function postToAlgoliaDocument(post: Post): AlgoliaStackDocument {
     type: post.type,
     title: post.title,
     summary: post.summary ?? "",
+    mainImageUrl: post.mainImageUrl ?? "",
     content: markdownToTxt(post.content ?? ""),
     tags: post.tags,
   };
