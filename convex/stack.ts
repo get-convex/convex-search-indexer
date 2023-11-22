@@ -21,6 +21,7 @@ const A_LOT_OF_POSTS = 10000;
 
 type AlgoliaStackDocument = {
   objectID: string;
+  type: 'article' | 'video';
   title: string;
   summary: string;
   content: string;
@@ -30,6 +31,7 @@ type AlgoliaStackDocument = {
 // A union of the fields needed for fetching articles and videos.
 const postFields = `
   _id,
+  type,
   title,
   content,
   summary,
@@ -39,6 +41,7 @@ const postFields = `
 
 type Post = {
   _id: any;
+  type: 'article' | 'video';
   title: string;
   summary: string;
   content: string;
@@ -62,6 +65,7 @@ async function getPosts(limit: number): Promise<AlgoliaStackDocument[]> {
 function postToAlgoliaDocument(post: Post): AlgoliaStackDocument {
   return {
     objectID: post.slug,
+    type: post.type,
     title: post.title,
     summary: post.summary ?? "",
     content: markdownToTxt(post.content ?? ""),
