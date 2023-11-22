@@ -25,6 +25,8 @@ type AlgoliaStackDocument = {
   title: string;
   summary: string;
   mainImageUrl: string;
+  authorName: string;
+  authorImageUrl: string;
   content: string;
   tags: string[];
 };
@@ -37,6 +39,8 @@ const postFields = `
   content,
   summary,
   'mainImageUrl': mainImage.asset->url,
+  'authorName': author->name,
+  'authorImageUrl': author->image.asset->url,
   'slug':slug.current,
   'tags': tags[]->tag.current
 `;
@@ -47,6 +51,8 @@ type Post = {
   title: string;
   summary: string;
   mainImageUrl: string;
+  authorName: string;
+  authorImageUrl: string;
   content: string;
   tags: string[];
   slug: string;
@@ -72,6 +78,8 @@ function postToAlgoliaDocument(post: Post): AlgoliaStackDocument {
     title: post.title,
     summary: post.summary ?? "",
     mainImageUrl: post.mainImageUrl ?? "",
+    authorName: post.authorName,
+    authorImageUrl: post.authorImageUrl,
     content: markdownToTxt(post.content ?? ""),
     tags: post.tags,
   };
