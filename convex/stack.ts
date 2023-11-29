@@ -21,8 +21,12 @@ const A_LOT_OF_POSTS = 10000;
 
 type AlgoliaStackDocument = {
   objectID: string;
+  type: 'article' | 'video';
   title: string;
   summary: string;
+  mainImageUrl: string;
+  authorName: string;
+  authorImageUrl: string;
   content: string;
   tags: string[];
 };
@@ -30,17 +34,25 @@ type AlgoliaStackDocument = {
 // A union of the fields needed for fetching articles and videos.
 const postFields = `
   _id,
+  type,
   title,
   content,
   summary,
+  'mainImageUrl': mainImage.asset->url,
+  'authorName': author->name,
+  'authorImageUrl': author->image.asset->url,
   'slug':slug.current,
   'tags': tags[]->tag.current
 `;
 
 type Post = {
   _id: any;
+  type: 'article' | 'video';
   title: string;
   summary: string;
+  mainImageUrl: string;
+  authorName: string;
+  authorImageUrl: string;
   content: string;
   tags: string[];
   slug: string;
@@ -62,8 +74,12 @@ async function getPosts(limit: number): Promise<AlgoliaStackDocument[]> {
 function postToAlgoliaDocument(post: Post): AlgoliaStackDocument {
   return {
     objectID: post.slug,
+    type: post.type,
     title: post.title,
     summary: post.summary ?? "",
+    mainImageUrl: post.mainImageUrl ?? "",
+    authorName: post.authorName,
+    authorImageUrl: post.authorImageUrl,
     content: markdownToTxt(post.content ?? ""),
     tags: post.tags,
   };
