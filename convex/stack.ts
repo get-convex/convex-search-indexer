@@ -24,6 +24,7 @@ type AlgoliaStackDocument = {
   type: 'article' | 'video';
   title: string;
   summary: string;
+  deprecated: boolean;
   mainImageUrl: string;
   authorName: string;
   authorImageUrl: string;
@@ -38,6 +39,7 @@ const postFields = `
   title,
   content,
   summary,
+  deprecated,
   'mainImageUrl': mainImage.asset->url,
   'authorName': author->name,
   'authorImageUrl': author->image.asset->url,
@@ -50,6 +52,7 @@ type Post = {
   type: 'article' | 'video';
   title: string;
   summary: string;
+  deprecated: boolean;
   mainImageUrl: string;
   authorName: string;
   authorImageUrl: string;
@@ -77,6 +80,7 @@ function postToAlgoliaDocument(post: Post): AlgoliaStackDocument {
     type: post.type,
     title: post.title,
     summary: post.summary ?? "",
+    deprecated: post.deprecated,
     mainImageUrl: post.mainImageUrl ?? "",
     authorName: post.authorName,
     authorImageUrl: post.authorImageUrl,
