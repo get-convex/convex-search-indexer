@@ -21,9 +21,10 @@ const A_LOT_OF_POSTS = 10000;
 
 type AlgoliaStackDocument = {
   objectID: string;
-  type: 'article' | 'video';
+  type: "article" | "video";
   title: string;
   summary: string;
+  deprecated: boolean;
   mainImageUrl: string;
   authorName: string;
   authorImageUrl: string;
@@ -38,6 +39,7 @@ const postFields = `
   title,
   content,
   summary,
+  deprecated,
   'mainImageUrl': mainImage.asset->url,
   'authorName': author->name,
   'authorImageUrl': author->image.asset->url,
@@ -47,9 +49,10 @@ const postFields = `
 
 type Post = {
   _id: any;
-  type: 'article' | 'video';
+  type: "article" | "video";
   title: string;
   summary: string;
+  deprecated: boolean;
   mainImageUrl: string;
   authorName: string;
   authorImageUrl: string;
@@ -77,6 +80,7 @@ function postToAlgoliaDocument(post: Post): AlgoliaStackDocument {
     type: post.type,
     title: post.title,
     summary: post.summary ?? "",
+    deprecated: post.deprecated ?? false,
     mainImageUrl: post.mainImageUrl ?? "",
     authorName: post.authorName,
     authorImageUrl: post.authorImageUrl,
