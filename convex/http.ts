@@ -2,6 +2,12 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
+type NetlifyDeployWebhookPayload = {
+  context?: string;
+  branch?: string;
+  id?: string;
+};
+
 // Webhook called by Sanity on Stack content changes.
 const indexStack = httpAction(async ({ runAction }, request) => {
   const secret = request.headers.get("x-indexer-secret");
@@ -13,7 +19,7 @@ const indexStack = httpAction(async ({ runAction }, request) => {
   }
   if (secret !== process.env.SEARCH_INDEXER_SECRET) {
     console.error(
-      "Index webhook called with incorrect x-indexer-secret header"
+      "Index webhook called with incorrect x-indexer-secret header",
     );
     return new Response(null, {
       status: 403,
@@ -36,6 +42,30 @@ const indexDocs = httpAction(async ({ runAction }, request) => {
       status: 403,
     });
   }
+
+  let payload: NetlifyDeployWebhookPayload;
+  try {
+    payload = (await request.json()) as NetlifyDeployWebhookPayload;
+  } catch (error) {
+    console.error("Failed to parse Netlify webhook payload", error);
+    return new Response(null, {
+      status: 400,
+    });
+  }
+
+  if (payload.context !== "production") {
+    console.log(
+      `Skipping docs index for Netlify context=${payload.context ?? "unknown"} id=${payload.id ?? "unknown"}`,
+    );
+    return new Response(null, {
+      status: 202,
+    });
+  }
+
+  console.log(
+    `Starting docs index for Netlify production deploy id=${payload.id ?? "unknown"}`,
+  );
+
   // Run action in background (if it passes auth checks).
   // Netlify doesn't like long-running HTTP requests.
   const validated = await runAction(internal.docs.validateAndIndex, {
