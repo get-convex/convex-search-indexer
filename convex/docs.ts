@@ -21,6 +21,60 @@ const convexAlgolia = getAlgolia();
 const DOCS_INDEX = "docs";
 const DEFAULT_DOCS_URL = "https://docs.convex.dev";
 const CRAWL_CONCURRENCY = 10;
+// A record can be up to 100,000 bytes, but that includes metadata.
+const MAX_ALGOLIA_RECORD_CONTENT_BYTES = 95_000;
+
+// Returns the number of bytes in a string encoded as UTF-8.
+function utf8ByteLength(value: string): number {
+  return Buffer.byteLength(value, "utf8");
+}
+
+// Keep one Algolia record per page and cap its contents by byte size. We may
+// lose some tail content on very long pages (currently just
+// /api/modules/server). A future alternative is chunking each page into
+// multiple records, which avoids losing content but adds deduping/ranking
+// complexity and might require UI changes.
+function truncateTextByByteLimit(
+  text: string,
+  maxBytes: number
+): {
+  text: string;
+  truncated: boolean;
+  originalBytes: number;
+  resultingBytes: number;
+} {
+  const originalBytes = utf8ByteLength(text);
+  if (originalBytes <= maxBytes) {
+    return {
+      text,
+      truncated: false,
+      originalBytes,
+      resultingBytes: originalBytes,
+    };
+  }
+
+  let cut = Math.min(text.length, maxBytes);
+  while (cut > 0 && utf8ByteLength(text.slice(0, cut)) > maxBytes) {
+    cut -= 1;
+  }
+
+  if (cut <= 0) {
+    return {
+      text: "",
+      truncated: true,
+      originalBytes,
+      resultingBytes: 0,
+    };
+  }
+
+  const truncatedText = text.slice(0, cut).trimEnd();
+  return {
+    text: truncatedText,
+    truncated: true,
+    originalBytes,
+    resultingBytes: utf8ByteLength(truncatedText),
+  };
+}
 
 async function docUrlToIndexDocument(
   url: string
@@ -45,12 +99,22 @@ async function docUrlToIndexDocument(
   // Let's create new container only with doc contents.
   var docStrings = sections.map((_ind, s) => htmlToText(doc.html(s)));
   const contents = docStrings.toArray().join("\n");
+  const truncated = truncateTextByByteLimit(
+    contents,
+    MAX_ALGOLIA_RECORD_CONTENT_BYTES
+  );
   console.log(`Finished ${url}`);
+
+  if (truncated.originalBytes > truncated.resultingBytes) {
+    console.log(
+      `Truncated ${url} for Algolia size limit (${truncated.originalBytes} -> ${truncated.resultingBytes} bytes)`
+    );
+  }
 
   return {
     objectID: url,
     title,
-    contents,
+    contents: truncated.text,
   };
 }
 
